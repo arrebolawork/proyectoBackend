@@ -60,7 +60,6 @@ const ProductController = {
   },
   getProductByName(req, res) {
     const { name } = req.query;
-
     Product.findAll({
       where: {
         name: {
@@ -73,6 +72,28 @@ const ProductController = {
           res.status(200).send({ products });
         } else {
           res.status(404).send({ message: "No se encontraron productos con ese nombre" });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send({ message: "Error al buscar productos" });
+      });
+  },
+  getProductByPrice(req, res) {
+    const { price } = req.query;
+    if (!price) {
+      return res.status(400).send({ message: "Debes proporcionar un valor de precio" });
+    }
+    Product.findAll({
+      where: {
+        price: parseFloat(price),
+      },
+    })
+      .then((products) => {
+        if (products.length > 0) {
+          res.status(200).send({ products });
+        } else {
+          res.status(404).send({ message: "No se encontraron productos con ese precio" });
         }
       })
       .catch((err) => {
