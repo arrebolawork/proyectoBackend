@@ -27,5 +27,20 @@ const ProductController = {
         res.status(500).send({ message: "Error al actualizar el producto" });
       });
   },
+  deleteProduct(req, res) {
+    const { id } = req.params;
+    Product.destroy({ where: { id } })
+      .then((deleted) => {
+        if (deleted) {
+          res.status(200).send({ message: "Producto eliminado con éxito" });
+        } else {
+          res.status(404).send({ message: "Producto no encontrado" });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send({ message: "Error al eliminar el producto" });
+      });
+  },
 };
 module.exports = ProductController;
