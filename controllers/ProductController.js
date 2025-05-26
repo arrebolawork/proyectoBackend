@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-const { Product } = require('../models/index')
-
-const ProductController = {
-
-}
-
-module.exports = ProductController
-=======
 //no se si falta la conexion a la base de datos???
 const { Product } = require("../models/index.js");
 const { Op } = require("sequelize");
@@ -112,4 +103,3 @@ const ProductController = {
   },
 };
 module.exports = ProductController;
->>>>>>> 64384d0 (endpoint para crear producto con ruta)
