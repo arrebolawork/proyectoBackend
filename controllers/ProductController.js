@@ -51,6 +51,21 @@ const ProductController = {
         res.status(500).send({ message: "Error al eliminar el producto" });
       });
   },
+  getById(req, res) {
+    const { id } = req.params;
+    Product.findByPk(id)
+      .then((product) => {
+        if (product) {
+          res.status(200).send({ product });
+        } else {
+          res.status(404).send({ message: "Producto no encontrado" });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send({ message: "Error al obtener el producto" });
+      });
+  },
 };
 module.exports = ProductController;
 >>>>>>> 64384d0 (endpoint para crear producto con ruta)
