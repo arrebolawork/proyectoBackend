@@ -1,4 +1,5 @@
 const { User } = require('../models/index.js')
+
 const UserController = {
  create(req, res) {
    req.body.role = 'user'
