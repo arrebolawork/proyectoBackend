@@ -1,5 +1,6 @@
 //no se si falta la conexion a la base de datos???
 const { Product } = require("../models/index.js");
+const { Op } = require("sequelize");
 const ProductController = {
   createProduct(req, res) {
     Product.create(req.body)
@@ -55,6 +56,28 @@ const ProductController = {
       .catch((err) => {
         console.error(err);
         res.status(500).send({ message: "Error al obtener el producto" });
+      });
+  },
+  getProductByName(req, res) {
+    const { name } = req.query;
+
+    Product.findAll({
+      where: {
+        name: {
+          [Op.like]: `%${name}%`,
+        },
+      },
+    })
+      .then((products) => {
+        if (products.length > 0) {
+          res.status(200).send({ products });
+        } else {
+          res.status(404).send({ message: "No se encontraron productos con ese nombre" });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send({ message: "Error al buscar productos" });
       });
   },
 };
