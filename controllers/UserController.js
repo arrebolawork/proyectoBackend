@@ -1,6 +1,6 @@
 const { User } = require("../models/index.js");
 const jwt = require("jsonwebtoken");
-
+const { jwt_secret } = require("../config/config.json")["development"];
 const UserController = {
   create(req, res) {
     req.body.role = "user";
@@ -21,7 +21,7 @@ const UserController = {
         return res.status(401).send({ message: "Contraseña incorrecta" });
       }
 
-      const token = jwt.sign({ id: user.id, name: user.name }, process.env.JWT_SECRET || "defaultsecret", { expiresIn: "1h" });
+      const token = jwt.sign({ id: user.id, name: user.name }, jwt_secret || "defaultsecret", { expiresIn: "1h" });
 
       res.status(200).send({ message: "Login exitoso", token });
     } catch (err) {
