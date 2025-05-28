@@ -4,13 +4,9 @@ const bcrypt = require("bcrypt");
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
+    
     static associate(models) {
-      User.hasMany(models.Order);
+      User.hasMany(models.Order, { foreignKey: 'userId' });
     }
     async validatePassword(password) {
       return await bcrypt.compare(password, this.passwd);
