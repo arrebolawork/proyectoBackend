@@ -4,9 +4,9 @@ const bcrypt = require("bcrypt");
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-    
     static associate(models) {
-      User.hasMany(models.Order, { foreignKey: 'userId' });
+      User.hasMany(models.Order, { foreignKey: "userId" });
+      User.hasMany(models.Token);
     }
     async validatePassword(password) {
       return await bcrypt.compare(password, this.passwd);
