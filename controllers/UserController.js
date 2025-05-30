@@ -1,4 +1,4 @@
-const { User, Token, Sequelize } = require("../models/index.js");
+const { User, Token, Sequelize, Order, Product } = require("../models/index.js");
 const jwt = require("jsonwebtoken");
 const { jwt_secret } = require("../config/config.json")["development"];
 const { Op } = Sequelize;
@@ -41,6 +41,35 @@ const UserController = {
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: "hubo un problema al tratar de desconectarte", error });
+    }
+  },
+  async profile(req, res) {
+    try {
+      const user = await User.findByPk(req.user.id, {
+        attributes: { exclude: ["passwd"] },
+        include: [
+          {
+            model: Order,
+            include: [
+              {
+                model: Product,
+                through: {
+                  attributes: ["productCount", "totalPrice"],
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      if (!user) {
+        return res.status(404).send({ message: "Usuario no encontrado" });
+      }
+
+      res.send(user);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: "Error al obtener perfil", error });
     }
   },
 };
