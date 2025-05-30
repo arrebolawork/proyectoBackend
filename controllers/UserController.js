@@ -3,11 +3,15 @@ const jwt = require("jsonwebtoken");
 const { jwt_secret } = require("../config/config.json")["development"];
 const { Op } = Sequelize;
 const UserController = {
-  create(req, res) {
+  create(req, res, next) {
     req.body.role = "user";
     User.create(req.body)
       .then((user) => res.status(201).send({ message: "Usuario creado con éxito", user }))
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err)
+        next(err)
+      }
+      );
   },
   async login(req, res) {
     const { name, passwd } = req.body;

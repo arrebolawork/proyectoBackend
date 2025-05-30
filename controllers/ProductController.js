@@ -4,11 +4,7 @@ const { Op } = require("sequelize");
 const ProductController = {
   createProduct(req, res) {
     const { name, price, categoryId } = req.body;
-    if (!name || !price || !categoryId) {
-      return res.status(400).send({
-        message: "Todos los campos (name, price, categoryId) son obligatorios",
-      });
-    }
+
     Product.create(req.body)
       .then((product) => res.status(201).send({ message: "Producto creado con éxito", product }))
       .catch((err) => console.error(err));
