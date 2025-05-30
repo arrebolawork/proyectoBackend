@@ -1,10 +1,13 @@
 const { Category, Product } = require('../models');
 
 const CategoryController = {
-  create(req, res) {
+  create(req, res, next) {
     Category.create(req.body)
       .then(category => res.status(201).send({ message: "Categoría creada con éxito", category }))
-      .catch(err => res.status(400).send({ error: err.message }));
+      .catch(err =>{ 
+        res.status(400).send({ error: err.message })
+        next(err)
+      });
   },
   getAll(req, res) {
     Category.findAll({ include: Product })

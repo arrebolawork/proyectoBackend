@@ -3,9 +3,7 @@ const { Order, Product, User } = require('../models/index');
 const OrderController = {
   create(req, res) {
     const { userId, orderDate, products } = req.body;
-    if (!userId || !orderDate || !Array.isArray(products) || products.length === 0) {
-      return res.status(400).send({ message: "userId, orderDate y products son obligatorios" });
-    }
+
     Order.create(
       { userId, orderDate },
     )
