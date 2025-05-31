@@ -8,8 +8,8 @@ const ProductController = {
     Product.create(req.body)
       .then((product) => res.status(201).send({ message: "Producto creado con éxito", product }))
       .catch((err) => {
-        console.error(err)
-         next(err)
+        console.error(err);
+        next(err);
       });
   },
   updateProduct(req, res) {
@@ -104,6 +104,18 @@ const ProductController = {
       .catch((err) => {
         console.error(err);
         res.status(500).send({ message: "Error al buscar productos" });
+      });
+  },
+  getProductsByPriceDesc(req, res) {
+    Product.findAll({
+      order: [["price", "DESC"]],
+    })
+      .then((products) => {
+        res.status(200).send({ products });
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send({ message: "Error al ordenar productos por precio" });
       });
   },
 };
