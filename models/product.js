@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.FLOAT,
         allowNull: false,
         validate: {
-          notNull: { msg: "Por favor introduce el nombre" },
+          notNull: { msg: "Por favor introduce el precio" },
         },
       },
     },
