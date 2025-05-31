@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/ProductController");
+const { authentication } = require("../middleware/authentication");
 
-router.post("/", productController.createProduct);
+router.post("/", authentication, productController.createProduct);
 router.get("/search", productController.getProductByName);
 router.get("/price", productController.getProductByPrice);
 router.get("/:id", productController.getById);
