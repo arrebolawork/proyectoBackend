@@ -3,12 +3,13 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn("Tokens", "UserId", {
-      type: Sequelize.INTEGER,
-      allowNull: false,
+    await queryInterface.addConstraint("Tokens", {
+      fields: ["UserId"],
+      type: "foreign key",
+      name: "fk_tokens_userid",
       references: {
-        model: "Users",
-        key: "id",
+        table: "Users",
+        field: "id",
       },
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
@@ -16,6 +17,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn("Tokens", "UserId");
+    await queryInterface.removeConstraint("Tokens", "fk_tokens_userid");
   },
 };
