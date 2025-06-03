@@ -3,14 +3,22 @@ const jwt = require("jsonwebtoken");
 const { jwt_secret } = require("../config/config.json")["development"];
 const { Op } = Sequelize;
 const UserController = {
-  create(req, res, next) {
-    req.body.role = "user";
-    User.create(req.body)
-      .then((user) => res.status(201).send({ message: "Usuario creado con éxito", user }))
-      .catch((err) => {
-        console.error(err);
-        next(err);
+  async create(req, res, next) {
+    try {
+      const hash = bcrypt.hashSync(req.body.password, 10);
+      const user = await User.create({
+        ...req.body,
+        password: hash,
+        confirmed: false,
+        role: "user",
       });
+      res.status(201).send({
+        message: "Usuari@ registrad@ con éxito",
+        user,
+      });
+    } catch (err) {
+      next(err);
+    }
   },
   async login(req, res) {
     const { name, passwd } = req.body;
@@ -18,31 +26,21 @@ const UserController = {
       console.log("⏳ Buscando usuario:", name);
       const user = await User.findOne({ where: { name } });
       if (!user) {
-        console.log("❌ Usuario no encontrado");
-        return res.status(401).send({ message: "Usuario no encontrado" });
+        return res.status(401).send({ message: "Usuario o contraseña incorrectos" });
       }
-
-      console.log("✅ Usuario encontrado:", user.name);
 
       const isPasswordValid = await user.validatePassword(passwd);
       if (!isPasswordValid) {
-        console.log("❌ Contraseña incorrecta");
-        return res.status(401).send({ message: "Contraseña incorrecta" });
+        return res.status(401).send({ message: "Usuario o contraseña incorrectos" });
+      }
+      if (!user.confirmed) {
+        return res.status(400).send({ message: "Debes confirmar tu correo" });
       }
 
-      console.log("🔐 Contraseña válida. Generando token...");
-
       const token = jwt.sign({ id: user.id, name: user.name }, jwt_secret || "defaultsecret", { expiresIn: "1h" });
-
-      console.log("✅ Token generado:", token);
-
       await Token.create({ token, UserId: user.id });
-
-      console.log("📝 Token guardado en base de datos");
-
       res.status(200).send({ message: "Login exitoso", token });
     } catch (err) {
-      console.error("💥 Error en login:", err);
       res.status(500).send({ message: "Error al iniciar sesión" });
     }
   },
