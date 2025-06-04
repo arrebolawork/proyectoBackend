@@ -2,48 +2,56 @@ const { User, Token, Sequelize, Order, Product } = require("../models/index.js")
 const jwt = require("jsonwebtoken");
 const { jwt_secret } = require("../config/config.json")["development"];
 const { Op } = Sequelize;
+const transporter = require("../config/nodemailer.js");
 const UserController = {
-  create(req, res, next) {
-    req.body.role = "user";
-    User.create(req.body)
-      .then((user) => res.status(201).send({ message: "Usuario creado con éxito", user }))
-      .catch((err) => {
-        console.error(err);
-        next(err);
+  async create(req, res, next) {
+    try {
+      const user = await User.create({
+        ...req.body,
+        confirmed: false,
+        role: "user",
       });
+      const emailToken = jwt.sign({ email: req.body.email }, jwt_secret, { expiresIn: "48h" });
+
+      const url = "http://localhost:3000/user/confirm/" + emailToken;
+      await transporter.sendMail({
+        to: req.body.email,
+        subject: "Confirme su registro",
+        html: `
+         <h3>Bienvenido, estás a un paso de registrarte </h3>
+         <a href=${url}> Click para confirmar tu registro</a>
+       `,
+      });
+      res.status(201).send({ message: "confirma registro en tu correo", user });
+    } catch (err) {
+      next(err);
+    }
   },
   async login(req, res) {
-    const { name, passwd } = req.body;
+    const { email, passwd } = req.body;
     try {
-      console.log("⏳ Buscando usuario:", name);
-      const user = await User.findOne({ where: { name } });
-      if (!user) {
-        console.log("❌ Usuario no encontrado");
-        return res.status(401).send({ message: "Usuario no encontrado" });
-      }
+      console.log("⏳ Buscando usuario con email:", email);
+      const user = await User.findOne({ where: { email } });
 
-      console.log("✅ Usuario encontrado:", user.name);
+      if (!user) {
+        return res.status(401).send({ message: "Usuario o contraseña incorrectos" });
+      }
 
       const isPasswordValid = await user.validatePassword(passwd);
       if (!isPasswordValid) {
-        console.log("❌ Contraseña incorrecta");
-        return res.status(401).send({ message: "Contraseña incorrecta" });
+        return res.status(401).send({ message: "Usuario o contraseña incorrectos" });
       }
 
-      console.log("🔐 Contraseña válida. Generando token...");
+      if (!user.confirmed) {
+        return res.status(400).send({ message: "Debes confirmar tu correo" });
+      }
 
-      const token = jwt.sign({ id: user.id, name: user.name }, jwt_secret || "defaultsecret", { expiresIn: "1h" });
-
-      console.log("✅ Token generado:", token);
-
+      const token = jwt.sign({ id: user.id, email: user.email }, jwt_secret || "defaultsecret", { expiresIn: "1h" });
       await Token.create({ token, UserId: user.id });
-
-      console.log("📝 Token guardado en base de datos");
 
       res.status(200).send({ message: "Login exitoso", token });
     } catch (err) {
-      console.error("💥 Error en login:", err);
-      res.status(500).send({ message: "Error al iniciar sesión" });
+      res.status(500).send({ message: "Error al iniciar sesión", err });
     }
   },
   async logout(req, res) {
@@ -86,6 +94,23 @@ const UserController = {
     } catch (error) {
       console.error(error);
       res.status(500).send({ message: "Error al obtener perfil", error });
+    }
+  },
+  async confirm(req, res) {
+    try {
+      const token = req.params.emailToken;
+      const payload = jwt.verify(token, jwt_secret);
+
+      const [updated] = await User.update({ confirmed: true }, { where: { email: payload.email } });
+
+      if (updated === 0) {
+        return res.status(404).send("No se encontró el usuario para confirmar");
+      }
+
+      res.status(200).send("Usuario confirmado con éxito");
+    } catch (error) {
+      console.error("Error al confirmar:", error.message);
+      res.status(400).send("Token inválido o expirado");
     }
   },
 };
