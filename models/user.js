@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       User.hasMany(models.Order, { foreignKey: "userId" });
       User.hasMany(models.Token);
+      User.hasMany(models.Reviews);
     }
     async validatePassword(password) {
       return await bcrypt.compare(password, this.passwd);
