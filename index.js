@@ -1,9 +1,10 @@
 const express = require("express");
 const app = express();
 const PORT = 3000;
+const cors = require("cors");
 const { typeError } = require("./middleware/errors");
 app.use(express.json());
-
+app.use(cors());
 app.use("/user", require("./routes/user.js"));
 app.use("/product", require("./routes/products.js"));
 app.use("/category", require("./routes/category.js"));
