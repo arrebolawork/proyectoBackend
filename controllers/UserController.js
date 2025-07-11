@@ -6,6 +6,8 @@ const transporter = require("../config/nodemailer.js");
 const UserController = {
   async create(req, res, next) {
     try {
+      const emailFound = await User.findOne({ where: { email: req.body.email } });
+      if (emailFound) return res.status(400).send({ message: "Email duplicado en la base de datos" });
       const user = await User.create({
         ...req.body,
         confirmed: false,
